@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Configura las credenciales de Google Drive
-CLIENT_SECRET_FILE = '/home/rafael/Documents/credenciales/secret.json'
+CLIENT_SECRET_FILE = '/credentials/secret.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 # ID de la carpeta donde deseas subir la imagen
