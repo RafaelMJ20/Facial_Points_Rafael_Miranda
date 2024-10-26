@@ -24,6 +24,7 @@ def index():
 
 # Cambia esta parte del código en tu función obtener_servicio_drive()
 def obtener_servicio_drive():
+    SCOPES = ['https://www.googleapis.com/auth/drive.file']
     # Carga las credenciales desde la variable de entorno
     creds_info = json.loads(os.environ.get('GOOGLE_APPLICATION_CREDENTIALS_JSON'))
     creds = service_account.Credentials.from_service_account_info(creds_info, scopes=SCOPES)
