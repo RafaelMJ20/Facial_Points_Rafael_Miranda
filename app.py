@@ -16,7 +16,7 @@ CORS(app)
 
 
 # ID de la carpeta donde deseas subir la imagen
-FOLDER_ID = '1X3aRgkGKUEuZXKNqDrOx2sbXvZsK3Lpi'
+FOLDER_ID = '1Z5oK0YBGg8HFsbpmsUWFwKqtczKXZxPX'
 
 @app.route('/')
 def index():
