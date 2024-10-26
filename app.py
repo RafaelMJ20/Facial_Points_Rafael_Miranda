@@ -5,6 +5,8 @@ from flask_cors import CORS
 from PIL import Image, ImageDraw
 import io
 import base64
+import json
+import os
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
@@ -12,9 +14,6 @@ from googleapiclient.http import MediaIoBaseUpload
 app = Flask(__name__)
 CORS(app)
 
-# Configura las credenciales de Google Drive
-CLIENT_SECRET_FILE = '/credentials/secret.json'
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 # ID de la carpeta donde deseas subir la imagen
 FOLDER_ID = '1X3aRgkGKUEuZXKNqDrOx2sbXvZsK3Lpi'
@@ -23,10 +22,11 @@ FOLDER_ID = '1X3aRgkGKUEuZXKNqDrOx2sbXvZsK3Lpi'
 def index():
     return render_template('index.html')
 
-# Inicializar el servicio de Google Drive
+# Cambia esta parte del código en tu función obtener_servicio_drive()
 def obtener_servicio_drive():
-    creds = service_account.Credentials.from_service_account_file(
-        CLIENT_SECRET_FILE, scopes=SCOPES)
+    # Carga las credenciales desde la variable de entorno
+    creds_info = json.loads(os.environ.get('GOOGLE_APPLICATION_CREDENTIALS_JSON'))
+    creds = service_account.Credentials.from_service_account_info(creds_info, scopes=SCOPES)
     service = build('drive', 'v3', credentials=creds)
     return service
 
