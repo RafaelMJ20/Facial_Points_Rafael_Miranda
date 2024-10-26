@@ -1,9 +1,9 @@
-Flask==2.0.1
-Flask-CORS==3.0.10
-mediapipe==0.8.9
-Pillow==8.3.2
-google-auth==1.35.0
-google-auth-oauthlib==0.4.6
-google-api-python-client==1.12.8
-numpy==1.21.2
+Flask
+Flask-CORS
+mediapipe
+Pillow
+google-auth
+google-auth-oauthlib
+google-api-python-client
+numpy
 gunicorn
