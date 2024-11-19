@@ -43,10 +43,10 @@ def detectar_puntos_faciales():
 
     resultados = {}
     transformaciones = {
-        "original": image_np,
-        "horizontal_flip": np.flip(image_np, axis=1),
-        "brightness_increased": np.clip(image_np * 1.8, 0, 255).astype(np.uint8),
-        "vertical_flip": np.flip(image_np, axis=0)
+        "Original": image_np,
+        "Girar horizontalmente": np.flip(image_np, axis=1),
+        "Incrementar brillo": np.clip(image_np * 1.8, 0, 255).astype(np.uint8),
+        "Girar verticalmente": np.flip(image_np, axis=0)
     }
 
     with mp_face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1, refine_landmarks=True, min_detection_confidence=0.5) as face_mesh:
