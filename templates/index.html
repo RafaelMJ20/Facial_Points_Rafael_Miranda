@@ -85,8 +85,96 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <h5 class="card-title">${key.replace('_', ' ').toUpperCase()}</h5>
-                                        <img src="data:image/png;base64,${data.image_base64}" alt="${key}" class="img-fluid">
-                                        <p class="card-text mt-2">ID en Google Drive: ${data.drive_id}</p>
+                                        <img src="data:image/png;base64,${data.image_base64}" alt="${key}" class="img-fluid"><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detector de Puntos Faciales</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .image-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center">Detector de Puntos Faciales</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="file">Selecciona una imagen:</label>
+            <input type="file" id="file" name="file" accept="image/*" required class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Subir Imagen</button>
+    </form>
+
+    <div class="image-container" id="image-container" style="display: none;">
+        <h2>Imagen Procesada</h2>
+        <img id="image-with-points" alt="Imagen con puntos faciales">
+        <p id="image-name" class="mt-2"></p>
+    </div>
+
+    <div class="footer">
+        <p>Rafael Miranda Jimenez</p>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#upload-form').on('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: '/upload',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    // Muestra la imagen procesada
+                    $('#image-with-points').attr('src', 'data:image/png;base64,' + response.image_with_points_base64);
+                    $('#image-name').text('Nombre de la imagen: ' + $('#file').val().split('\\').pop());
+                    $('#image-container').show();
+                    alert('Imagen subida a Google Drive con éxito!');
+                },
+                error: function (xhr) {
+                    alert('Error al subir la imagen: ' + xhr.responseJSON.error);
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
                                     </div>
                                 </div>
                             </div>
