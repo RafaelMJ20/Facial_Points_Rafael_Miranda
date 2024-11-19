@@ -20,7 +20,9 @@
         }
         .image-container {
             margin-top: 20px;
-            text-align: center;
+        }
+        .card {
+            margin-bottom: 20px;
         }
         img {
             max-width: 100%;
@@ -49,9 +51,10 @@
     </form>
 
     <div class="image-container" id="image-container" style="display: none;">
-        <h2>Imagen Procesada</h2>
-        <img id="image-with-points" alt="Imagen con puntos faciales">
-        <p id="image-name" class="mt-2"></p>
+        <h2 class="text-center">Imágenes Procesadas</h2>
+        <div class="row">
+            <!-- Aquí se generarán dinámicamente las tarjetas para las imágenes -->
+        </div>
     </div>
 
     <div class="footer">
@@ -72,11 +75,27 @@
                 contentType: false,
                 processData: false,
                 success: function (response) {
-                    // Muestra la imagen procesada
-                    $('#image-with-points').attr('src', 'data:image/png;base64,' + response.image_with_points_base64);
-                    $('#image-name').text('Nombre de la imagen: ' + $('#file').val().split('\\').pop());
+                    const imageContainer = $('#image-container .row');
+                    imageContainer.empty(); // Limpia las imágenes previas
+
+                    // Iterar sobre las imágenes procesadas
+                    for (const [key, data] of Object.entries(response)) {
+                        const card = `
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${key.replace('_', ' ').toUpperCase()}</h5>
+                                        <img src="data:image/png;base64,${data.image_base64}" alt="${key}" class="img-fluid">
+                                        <p class="card-text mt-2">ID en Google Drive: ${data.drive_id}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        imageContainer.append(card);
+                    }
+
                     $('#image-container').show();
-                    alert('Imagen subida a Google Drive con éxito!');
+                    alert('Imágenes procesadas y subidas a Google Drive con éxito!');
                 },
                 error: function (xhr) {
                     alert('Error al subir la imagen: ' + xhr.responseJSON.error);
