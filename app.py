@@ -32,10 +32,12 @@ def detectar_puntos_faciales():
         return jsonify({'error': 'No se cargó ninguna imagen'})
 
     # Leer el contenido de la imagen original
-    imagen_original = archivo.read()
-    archivo.seek(0)
+    try:
+        imagen_original = Image.open(archivo)
+        image_np = np.array(imagen_original.convert('RGB'))
+    except Exception as e:
+        return jsonify({'error': f'Error al procesar la imagen: {str(e)}'})
 
-    image_np = np.array(Image.open(archivo).convert('RGB'))
     mp_face_mesh = mp.solutions.face_mesh
 
     if image_np is None:
@@ -79,7 +81,11 @@ def detectar_puntos_faciales():
                 'mimeType': 'image/png',
                 'parents': [FOLDER_ID]
             }
-            archivo_subido = service.files().create(body=archivo_metadata, media_body=archivo_drive).execute()
+            try:
+                archivo_subido = service.files().create(body=archivo_metadata, media_body=archivo_drive).execute()
+                print(f"Archivo subido con ID: {archivo_subido.get('id')}")
+            except Exception as e:
+                return jsonify({'error': f'Error al subir el archivo a Google Drive: {e}'})
 
             resultados[nombre] = {
                 'image_base64': base64.b64encode(img_data).decode('utf-8'),
@@ -94,32 +100,17 @@ def obtener_servicio_drive():
     creds_info = json.loads(os.environ.get('GOOGLE_APPLICATION_CREDENTIALS_JSON'))
     creds = service_account.Credentials.from_service_account_info(creds_info, scopes=SCOPES)
     service = build('drive', 'v3', credentials=creds)
+    
+    # Verificar que el servicio de Drive está funcionando correctamente
+    try:
+        service.files().list().execute()
+        print("Conexión a Google Drive establecida correctamente.")
+    except Exception as e:
+        print(f"Error al conectar con Google Drive: {e}")
+        return None
+
     return service
 
-def transformar_imagen(image_np, transform_type):
-    """Aplica una transformación específica a la imagen."""
-    if transform_type == 'horizontal_flip':
-        return np.flip(image_np, axis=1)
-    elif transform_type == 'vertical_flip':
-        return np.flip(image_np, axis=0)
-    elif transform_type == 'increase_brightness':
-        return np.clip(random.uniform(1.5, 2) * image_np, 0, 255).astype(np.uint8)
-    return image_np
-
-def guardar_imagen_pil(image_np):
-    """Convierte un arreglo numpy a una imagen PIL."""
-    return Image.fromarray(image_np)
-
-def subir_imagen_google_drive(service, img_data, filename):
-    """Sube una imagen a Google Drive."""
-    media = MediaIoBaseUpload(io.BytesIO(img_data), mimetype='image/png')
-    metadata = {
-        'name': filename,
-        'mimeType': 'image/png',
-        'parents': [FOLDER_ID]
-    }
-    archivo_drive = service.files().create(body=metadata, media_body=media).execute()
-    return archivo_drive.get('id')
 
 @app.route('/upload', methods=['POST'])
 def detectar_Puntos_Faciales():
@@ -130,23 +121,27 @@ def detectar_Puntos_Faciales():
     if archivo.filename == '':
         return jsonify({'error': 'No se cargó ninguna imagen'})
 
-    image_np = np.array(Image.open(archivo).convert('RGB'))
+    try:
+        image_np = np.array(Image.open(archivo).convert('RGB'))
+    except Exception as e:
+        return jsonify({'error': f'Error al procesar la imagen: {str(e)}'})
+
     if image_np is None:
         return jsonify({'error': 'Error al cargar la imagen'})
 
     # Transformaciones
     transforms = {
         'original': image_np,
-        'horizontal_flip': transformar_imagen(image_np, 'horizontal_flip'),
-        'increase_brightness': transformar_imagen(image_np, 'increase_brightness'),
-        'vertical_flip': transformar_imagen(image_np, 'vertical_flip')
+        'horizontal_flip': np.flip(image_np, axis=1),
+        'increase_brightness': np.clip(random.uniform(1.5, 2) * image_np, 0, 255).astype(np.uint8),
+        'vertical_flip': np.flip(image_np, axis=0)
     }
 
     # Procesar imágenes y subirlas
     service = obtener_servicio_drive()
     results = {}
     for transform_name, transformed_np in transforms.items():
-        img_pil = guardar_imagen_pil(transformed_np)
+        img_pil = Image.fromarray(transformed_np)
         buffered = io.BytesIO()
         img_pil.save(buffered, format="PNG")
         img_data = buffered.getvalue()
@@ -157,6 +152,24 @@ def detectar_Puntos_Faciales():
         }
 
     return jsonify(results)
+
+
+def subir_imagen_google_drive(service, img_data, filename):
+    """Sube una imagen a Google Drive."""
+    media = MediaIoBaseUpload(io.BytesIO(img_data), mimetype='image/png')
+    metadata = {
+        'name': filename,
+        'mimeType': 'image/png',
+        'parents': [FOLDER_ID]
+    }
+    try:
+        archivo_drive = service.files().create(body=metadata, media_body=media).execute()
+        print(f"Archivo subido con ID: {archivo_drive.get('id')}")
+        return archivo_drive.get('id')
+    except Exception as e:
+        print(f"Error al subir el archivo a Google Drive: {e}")
+        return None
+
 
 if __name__ == '__main__':
     app.run(debug=True)
